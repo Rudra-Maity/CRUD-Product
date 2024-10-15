@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD with LocalStorage</title>
+    <style>
+        input{
+            width: auto;
+            padding: 10px;
+            border: 2px blue solid;
+            border-radius: 5px;
+        }
+        ul {
+            list-style-type: none;
+        }
+        li {
+            margin-bottom: 30px;
+        }
+        .edit, .delete {
+            margin-left: 10px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .edit{
+            background-color: green;
+        }
+        .delete{
+            background-color: red;
+        }
+        button{
+            padding: 10px 25px 10px 25px;
+            border: none;
+            background-color: blue;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Management</h1>
+    <form id="productForm">
+        <label for="product">Enter the product name:</label>
+        <input type="text" id="product" required>
+        <button id="add">Add</button>
+    </form>
+    <h2>Product List</h2>
+    <ul id="productList"></ul>
+
+    <script>
+        let productsArr = [];
+        const productsFromStorage = localStorage.getItem('products');
+
+        if (productsFromStorage) {
+            productsArr = JSON.parse(productsFromStorage) || [];
+        }
+
+        const productForm = document.getElementById('add');
+        const productInput = document.getElementById('product');
+        const productList = document.getElementById('productList');
+//displaying the products lists
+        function displayProducts() {
+            productList.innerHTML = '';
+            console.log(productsArr);
+            
+            productsArr.forEach((product) => {
+                //create list for each product
+                const li = document.createElement('li');
+                //append product name and edit del btn
+                li.innerHTML = `${product.name} 
+                                <span class="edit" onclick="editProduct(${product.id})">Edit</span> 
+                                <span class="delete" onclick="deleteProduct(${product.id})">Delete</span>`;
+                productList.appendChild(li);
+            });
+        }
+//click add event
+        productForm.addEventListener('click', (e) => {
+            e.preventDefault();
+            const productName = productInput.value.trim();
+            if (productName) {
+                const id = productsArr.length > 0 ? productsArr[productsArr.length - 1].id + 1 : 1;
+                productsArr.push({ id, name: productName });
+                localStorage.setItem('products', JSON.stringify(productsArr));
+                productInput.value = ''; 
+                displayProducts();//rerender
+            }
+        });
+
+        //delete product onclick function
+        function deleteProduct(id) {
+            productsArr = productsArr.filter(product => product.id !== id);
+            localStorage.setItem('products', JSON.stringify(productsArr));
+            displayProducts();//rerender
+        }
+
+        //edit product onclick
+        function editProduct(id) {
+            const productToEdit = productsArr.find(product => product.id === id);
+            const newProductName = prompt('Edit product name:', productToEdit.name);
+            if (newProductName) {
+                productToEdit.name = newProductName;
+                localStorage.setItem('products', JSON.stringify(productsArr));
+                displayProducts();//rerender
+            }
+        }
+
+        displayProducts();
+    </script>
+</body>
+</html>
